@@ -12,12 +12,6 @@ declare global {
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error(
-    "DATABASE URL NOT FOUND!"
-  );
-}
-
 // Initialize cache
 let cached: MongooseCache = global.mongoose || {
   conn: null,
@@ -36,13 +30,18 @@ async function connectDB(): Promise<typeof mongoose> {
 
   // 2. If no connection in progress → create one
   if (!cached.promise) {
+    if (!MONGODB_URI) {
+      throw new Error("DATABASE URL NOT FOUND!");
+    }
     const options = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, options).then((mongoose)=>{
+    cached.promise = mongoose
+      .connect(MONGODB_URI!, options)
+      .then((mongoose) => {
         return mongoose;
-    });
+      });
   }
 
   try {
